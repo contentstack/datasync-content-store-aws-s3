@@ -2,9 +2,13 @@
  * @description Default application's internal config
  */
 export const config = {
-  assetStore: {
+  contentStore: {
     // Optional: Use this, if any key passed in the pattern doesn't exist on the asset by default Or if the key exists on the asset, but needs overriding
-    pattern: '/:locale/:content_type_uid/:uid/:version/index.json',
+    patterns: {
+      asset: '/:locale/assets/:uid/:version/index.json',
+      entry: '/:locale/entries/:content_type_uid/:uid/:version/index.json',
+      contentType: '/schemas/:uid/index.json',
+    },
     versioning: true,
     region: 'us-east-1', // Required
     apiVersion: '2006-03-01', // Required
@@ -43,10 +47,48 @@ export const config = {
         assets: '_assets',
         content_type_uid: '_content_types'
       },
+      unwantedKeys: {
+        asset: {
+          action: true,
+          checkpoint: true,
+          'data.created_by': true,
+          event_at: true,
+          type: true,
+          'data.updated_by': true
+        },
+        contentType: {
+          'data.created_by': true,
+          'data.updated_by': true,
+          'data.DEFAULT_ACL': true,
+          'data.SYS_ACL': true,
+          'data.abilities': true,
+          'data.last_activity': true
+        },
+        entry: {
+          action: true,
+          checkpoint: true,
+          'data.created_by': true,
+          event_at: true,
+          type: true,
+          'data.updated_by': true
+        }
+      },
       requiredKeys: {
-        publish: ['locale', 'uid', 'url'],
-        unpublish: ['locale', 'uid', 'url', 'Key'],
-        delete: ['locale', 'uid', 'url', 'Key']
+        asset: {
+          locale: true,
+          uid: true,
+          url: true,
+        },
+        contentType: {
+          title: true,
+          uid: true,
+          schema: true,
+          _version: true,
+        },
+        entry: {
+          uid: true,
+          _version: true,
+        }
       }
     }
   }

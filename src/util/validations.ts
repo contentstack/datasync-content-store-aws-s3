@@ -1,11 +1,11 @@
 import { hasIn } from 'lodash'
 import { config as internalConfig } from '../config'
 
-const requiredKeys = internalConfig.assetStore.internal.requiredKeys
+const requiredKeys = internalConfig.contentStore.internal.requiredKeys
 
 export const validateConfig = (config) => {
   if (typeof config.bucketParams !== 'object' || !(config.bucketParams.Bucket || config.bucketParams.name)) {
-    throw new Error('Kindly provide valid bucket config')
+    throw new Error('Kindly provide valid bucket config!')
   } else if (typeof config.region === 'undefined' && typeof process.env.AWS_REGION !== 'string') {
     throw new Error('Kindly provide s3 \'region\'')
   } else {
@@ -40,13 +40,21 @@ const validateObject = (action, asset) => {
   const keys = requiredKeys[action]
   keys.forEach((key) => {
     if (!(hasIn(asset, key))) {
-      throw new Error(`Required key:${key} not found in ${JSON.stringify(asset)}`)
+      throw new Error(`Required key '${key}' not found in ${JSON.stringify(asset)}`)
     }
   })
 }
 
-export const validatePublishedObject = (obj) => {
-  validateObject('publish', obj)
+export const validatePublishedObject = (obj, requiredKeys) => {
+  if (requiredKeys && typeof requiredKeys === 'object') {
+    for (const key in requiredKeys) {
+      if (requiredKeys[key]) {
+        if (!hasIn(obj, key)) {
+          throw new Error(`Required key '${key}' was not found in ${JSON.stringify(obj)}`)
+        }
+      }
+    }
+  }
 }
 
 export const validateUnpublishedObject = (obj) => {

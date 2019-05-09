@@ -1,9 +1,4 @@
 import { join } from 'path'
-import { compact } from 'lodash'
-
-const patternInterpretation = (config) => {
-  return compact(config.pattern.split('/'))
-}
 
 export const getPath = (keys, input, versioning) => {
   const path = []
@@ -12,7 +7,12 @@ export const getPath = (keys, input, versioning) => {
     if (key.charAt(0) === ':') {
       key = key.slice(1)
       if (versioning && key === 'version') {
-        path.push(input.data._version)
+        if (input.data.url && input.data.download_id) {
+          // instead of version, add the download_id (in case of RTE)
+          path.push(input.data.download_id)
+        } else {
+          path.push(input.data._version.toString())
+        }
       } else if (key in input) {
         path.push(input[key])
       } else {
@@ -41,7 +41,6 @@ export const formatConfig = (config) => {
   config.uploadParams.Bucket = bucket.Bucket
   config.region = config.region || process.env.AWS_REGION
   config.apiVersion = config.apiVersion || 'latest'
-  config.patternKeys = patternInterpretation(config)
 
   return config
 }
@@ -64,6 +63,12 @@ export const buildAWSConfig = (config) => {
   return awsConfig
 }
 
-export const filterAssetKeys = (asset) => {
-  
+export const filterKeys = (input, keys = {}) => {
+  for (const key in keys) {
+    if (keys[key]) {
+      delete input[key]
+    }
+  }
+
+  return input
 }
