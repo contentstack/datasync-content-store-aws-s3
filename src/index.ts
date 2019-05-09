@@ -2,10 +2,10 @@ import { merge } from 'lodash'
 import { config as internalConfig } from './config'
 import { S3 } from './s3'
 import { init } from './setup'
-import { setLogger } from './util/logger'
 import { validateConfig } from './util/validations'
 
 let appConfig: any = {}
+let assetStore: any
 
 /**
  * @summary Application config interface
@@ -23,13 +23,11 @@ export interface IConfig {
 }
 
 /**
- * @summary Logger instance interface
+ * @interface
+ * @summary Asset store's interface
  */
-export interface ILogger {
-  warn(): any,
-  info(): any,
-  log(): any,
-  error(): any,
+interface IAssetStore {
+  start(): Promise<any>
 }
 
 /**
@@ -41,35 +39,40 @@ export const setConfig = (config: IConfig) => {
 }
 
 /**
+ * @summary Set asset store
+ * @param {object} 
+ */
+export const setAssetStore = (instance: IAssetStore) => {
+  assetStore = instance
+}
+
+/**
  * @summary Returns the application's configuration
- * @returns {Object} - Application config
+ * @returns {object} - Application config
  */
 export const getConfig = (): IConfig => {
   return appConfig
 }
 
 /**
- * @summary Set custom logger for logging
- * @param {Object} instance - Custom logger instance
- */
-export { setLogger }
-
-/**
  * @summary
  *  Starts the sync manager utility
  * @description
- *  Registers, validates asset, content stores and listener instances.
+ *  Registers, validates asset, content stores and listener instances
  *  Once done, builds the app's config and logger
- * @param {Object} config - Optional application config.
+ * @param {object} config Optional application config
+ * @param {instance} assetStoreInstance Instance of asset store
+ * @returns {promise} Returns AWS S3 content store instance
  */
-export const start = (config?: IConfig) => {
+export const start = (assetStoreInstance?: IAssetStore, config?: IConfig) => {
   return new Promise((resolve, reject) => {
     try {
       appConfig = merge(internalConfig, appConfig, config || {})
-      validateConfig(appConfig.assetStore)
-      return init(appConfig.assetStore)
+      validateConfig(appConfig.contentStore)
+      assetStore = assetStoreInstance || assetStore
+      return init(appConfig.contentStore)
         .then((awsInstance) => {
-          const s3 = new S3(awsInstance, appConfig)
+          const s3 = new S3(assetStore, awsInstance, appConfig)
           
           return resolve(s3)
         })
