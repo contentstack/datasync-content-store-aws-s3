@@ -71,6 +71,12 @@ export declare class S3 implements IContentStore {
     publishEntry(publishedEntry: IPublishedEntry): Promise<{}>;
     publishAsset(publishedAsset: IPublishedAsset): Promise<{}>;
     unpublish(unpublishedObject: IUnpublishedAsset | IUnpublishedEntry): Promise<{}>;
+    private searchS3;
+    private fetchContents;
+    private fetch;
+    private getObject;
+    private unpublishAsset;
+    private unpublishEntry;
     delete(deletedObject: IDeletedAsset | IDeletedEntry): Promise<{}>;
 }
 export {};
