@@ -77,6 +77,6 @@ export declare class S3 implements IContentStore {
     private getObject;
     private unpublishAsset;
     private unpublishEntry;
-    delete(deletedObject: IDeletedAsset | IDeletedEntry): Promise<{}>;
+    delete(input: any): Promise<{}>;
 }
 export {};
