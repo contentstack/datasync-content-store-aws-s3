@@ -10,3 +10,11 @@ coverage
 
 # Random files
 s3
+
+# Data
+_contents
+
+# Private examples
+example/filesystem.js
+example/s3.js
+example/mongodb.js

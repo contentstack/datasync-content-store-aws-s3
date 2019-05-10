@@ -172,6 +172,7 @@ export class S3 implements IContentStore {
   public publishEntry (publishedEntry: IPublishedEntry) {
     return new Promise(async (resolve, reject) => {
       try {
+        debug(`Publishing entry ${JSON.stringify(publishedEntry)}`)
         const clonedObject = cloneDeep(publishedEntry)
         const entry = {
           locale: clonedObject.locale,
@@ -229,6 +230,7 @@ export class S3 implements IContentStore {
   public publishAsset (publishedAsset: IPublishedAsset) {
     return new Promise(async (resolve, reject) => {
       try {
+        debug(`Publishing asset ${JSON.stringify(publishedAsset)}`)
         const asset = cloneDeep(publishedAsset)
 
         validatePublishedObject(asset.data, this.requiredKeys.asset)
@@ -241,7 +243,7 @@ export class S3 implements IContentStore {
         params.Key = assetPath
         params.Body = JSON.stringify(asset)
 
-        const req = this.s3.upload(params)
+        return this.s3.upload(params)
           .on('httpUploadProgress', debug)
           .on('error', reject)
           .promise()
@@ -251,11 +253,6 @@ export class S3 implements IContentStore {
             return resolve(publishedAsset)
           })
           .catch(reject)
-          req.on('build', () => {
-            if (asset.data._version) {
-              req.httpRequest.headers['x-amz-meta-download_id'] = asset.data._version
-            }
-          })
         } catch (error) {
           return reject(error)
         }
@@ -273,9 +270,10 @@ export class S3 implements IContentStore {
   private searchS3 (uid: string) {
     return new Promise((resolve, reject) => {
       const params = cloneDeep(this.config.uploadParams)
+      delete params.ACL
       params.Delimiter = uid
       // params.MaxKeys = 0
-
+      debug(`search s3 params: ${JSON.stringify(params)}`)
       // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#listObjects-property
       // params.RequestPayer = 'requester'
 
@@ -295,8 +293,9 @@ export class S3 implements IContentStore {
   private fetchContents (Prefix, Contents) {
     return new Promise((resolve, reject) => {
       const params = cloneDeep(this.config.uploadParams)
+      delete params.ACL
       params.Prefix = Prefix
-
+      debug(`fetchContents params ${JSON.stringify(params)}`)
       // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#listObjects-property
       // params.RequestPayer = 'requester'
 
@@ -305,53 +304,140 @@ export class S3 implements IContentStore {
         .on('error', reject)
         .promise()
         .then((s3Response) => {
-          debug(`fetchContents: list objects response: ${JSON.stringify(s3Response, null, 2)}`)
-
+          debug(`fetchContents response: ${JSON.stringify(s3Response, null, 2)}`)
           // TODO: Consideration, what if there are more than 1000 keys? Pagination Required!
-          Contents.concat(s3Response.Contents)
+          s3Response.Contents.forEach((Content: IContents) => {
+            Contents.push(Content)
+          })
           return resolve()
         })
         .catch(reject)
     })
   }
 
-  private fetch (input: any) {
+  private fetch (uid: string) {
     return new Promise(async (resolve, reject) => {
-      const Prefixes: { Prefix: string }[] = (await this.searchS3(input.uid) as { Prefix: string}[])
-      const UniqPrefixes = uniqBy(Prefixes, 'Prefix')
+      try {
+        debug(`Fetch called with uid: ${uid}`)
+        const Prefixes: { Prefix: string }[] = (await this.searchS3(uid) as { Prefix: string}[])
+        const UniqPrefixes = uniqBy(Prefixes, 'Prefix')
+        debug(`Unique prefixes found ${JSON.stringify(UniqPrefixes)}`)
+        const Contents: IContents[] = []
+        const promises: Promise<any>[] = []
 
-      const Contents: IContents[] = []
-      const promises: Promise<any>[] = []
+        UniqPrefixes.forEach((CommonPrefix) => {
+          promises.push(this.fetchContents(CommonPrefix.Prefix, Contents))
+        })
 
-      UniqPrefixes.forEach((Prefix) => {
-        promises.push(this.fetchContents(Prefix, Contents))
-      })
+        return Promise.all(promises)
+          .then(() => {
+            const UniqContents: IContents[] = uniqBy(Contents, 'Key')
+            const promises2: Promise<any>[] = []
+            const Items: IContents[] = []
+            debug(`Unique Contents found: ${JSON.stringify(UniqContents)}`)
 
-      return Promise.all(promises)
-        .then(() => {
-          const UniqContents: IContents[] = uniqBy(Contents, 'Key')
-          const promises2: Promise<any>[] = []
-          const Items: IContents[] = []
-
-          UniqContents.forEach((Content: IContents) => {
-            promises2.push(this.fetchContents(Content.Key, Items))
-          })
-
-          return Promise.all(promises2)
-            .then(() => {
-              return Items
+            UniqContents.forEach((Content: IContents) => {
+              promises2.push(this.fetchContents(Content.Key, Items))
             })
+
+            return Promise.all(promises2)
+              .then(() => {
+                debug(`Items: ${JSON.stringify(Items)}`)
+                for (let i = 0; i < Items.length; i++) {
+                  // Items that have '/' at the end of their Key are folders
+                  if (Items[i].Key.charAt(Items[i].Key.length - 1) === '/') {
+                    debug(`Removing folders.. ${JSON.stringify(Items[i])}`)
+                    Items.splice(i, 1)
+                    i--
+                  }
+                }
+                debug(`Items found ${JSON.stringify(Items)}`)
+
+                return Items
+              })
+          })
+          .then((Items) => {
+            const promises3: Promise<any>[] = []
+            const ItemsData: any = []
+            Items.forEach((Item) => {
+              promises3.push(this.getObject(Item, ItemsData))
+            })
+
+            return Promise.all(promises3)
+              .then(() => {
+                return ItemsData
+              })
+          })
+          .then((ItemsData) => resolve(ItemsData))
+          .catch(reject)
+        } catch (error) {
+          return reject(error)
+        }
+    })
+  }
+
+  private getObject (Item, ItemsData) {
+    return new Promise((resolve, reject) => {
+      const params = cloneDeep(this.config.uploadParams)
+      delete params.ACL
+      params.Key = Item.Key
+      debug(`getObject called with params: ${JSON.stringify(params)}`)
+
+      // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#listObjects-property
+      // params.RequestPayer = 'requester'
+
+      return this.s3.getObject(params)
+        .on('httpUploadProgress', debug)
+        .on('error', reject)
+        .promise()
+        .then((s3Response) => {
+          const data = JSON.parse(s3Response.Body)
+          // TODO: Consideration, what if there are more than 1000 keys? Pagination Required!
+          ItemsData.push(data)
+          return resolve()
         })
-        .then((Items) => {
-          const ItemsData: any = 
-        })
+        .catch(reject)
     })
   }
 
   private unpublishAsset (asset: IUnpublishedAsset) {
     return new Promise(async (resolve, reject) => {
       try {
-        const assets = await this.fetch(asset)
+        debug(`Unpublishing asset ${JSON.stringify(asset)}`)
+        const assets: any = await this.fetch(asset.uid)
+        let publishedAsset: any
+
+        // what if there are more than 1 matches? TODO: Investigate
+        for (let i = 0; i < assets.length; i++) {
+          if (assets[i].data._version) {
+            publishedAsset = assets[i]
+            break
+          }
+        }
+        
+        if (typeof publishedAsset === 'undefined') {
+          return resolve(asset)
+        }
+
+        await this.assetStore.unpublish(publishedAsset.data)
+
+        const params = cloneDeep(this.config.uploadParams)
+        delete params.ACL
+        params.Key = getPath(this.patterns.asset, publishedAsset, this.config.versioning)
+        // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#listObjects-property
+        // params.RequestPayer = 'requester'
+
+        return this.s3.deleteObject(params)
+          .on('httpUploadProgress', debug)
+          .on('error', reject)
+          .promise()
+          .then((s3Response) => {
+            debug(`deleteObject response: ${JSON.stringify(s3Response, null, 2)}`)
+            
+            // TODO: Consideration, what if there are more than 1000 keys? Pagination Required!
+            return resolve(asset)
+          })
+          .catch(reject)
       } catch (error) {
         return reject(error)
       }
@@ -359,9 +445,39 @@ export class S3 implements IContentStore {
   }
 
   private unpublishEntry (entry: IUnpublishedEntry) {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       try {
-        const entries = await this.fetch(entry)
+        const entries: any = await this.fetch(entry.uid)
+        let publishedEntry: any
+
+        // what if there are more than 1 matches? TODO: Investigate
+        for (let i = 0; i < entries.length; i++) {
+          if (entries[i].data._version) {
+            publishedEntry = entries[i]
+            break
+          }
+        }
+
+        if (typeof publishedEntry === 'undefined') {
+          return resolve(entry)
+        }
+
+        const params = cloneDeep(this.config.uploadParams)
+        params.Key = getPath(this.patterns.asset, publishedEntry, this.config.versioning)
+        // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#listObjects-property
+        // params.RequestPayer = 'requester'
+
+        return this.s3.deletedObject(params)
+          .on('httpUploadProgress', debug)
+          .on('error', reject)
+          .promise()
+          .then((s3Response) => {
+            debug(`deleteObject response: ${JSON.stringify(s3Response, null, 2)}`)
+            
+            // TODO: Consideration, what if there are more than 1000 keys? Pagination Required!
+            return resolve(entry)
+          })
+          .catch(reject)
       } catch (error) {
         return reject(error)
       }
