@@ -4,9 +4,9 @@
 Contentstack is a headless CMS with an API-first approach. It is a CMS that developers can use to build powerful cross-platform applications in their favorite languages. Build your application frontend, and Contentstack will take care of the rest. [Read More](https://www.contentstack.com/).
 
 
-## Contentstack DataSync COntent Store AWS-S3
+## Contentstack DataSync Content Store AWS-S3
 
-Contentstack DataSync lets you sync your Contentstack data with your database, enabling you to save data locally and serve content directly from your database. It is a combination of four powerful modules that is [DataSync Webhook Listener](https://github.com/contentstack/webhook-listener), [DataSync Manager](https://github.com/contentstack/datasync-manager), DataSync Asset Store - [Filesystem](https://github.com/contentstack/datasync-asset-store-filesystem) and [AWS S3](https://github.com/contentstack/datasync-asset-store-aws-s3), DataSync Content Store — [Filesystem](https://github.com/contentstack/datasync-content-store-filesystem),  [MongoDB](https://github.com/contentstack/datasync-content-store-mongodb) and [AWS S3](https://github.com/contentstack/datasync-content-store-aws-s3).
+Contentstack DataSync lets you sync your Contentstack data with your database, enabling you to save data locally and serve content directly from your database. It is a combination of four powerful modules that is [DataSync Webhook Listener](https://github.com/contentstack/webhook-listener), [DataSync Manager](https://github.com/contentstack/datasync-manager), DataSync Asset Store - [Filesystem](https://github.com/contentstack/datasync-asset-store-filesystem) and [AWS S3](https://github.com/contentstack/datasync-asset-store-aws-s3), DataSync Content Store — [Filesystem](https://github.com/contentstack/datasync-content-store-filesystem),  [MongoDB](https://github.com/contentstack/datasync-content-store-mongodb) and [AWS S3](https://github.com/contentstack/datasync-content-store-s3).
  
 The Cotentstack AWS S3 Content Store is part of Contentstack DataSync's content storage drivers and is used to store data in the AWS S3. Any publish, unpublish, or delete action performed on data will be tracked by the  Webhook Listener and the relevant content will be synced accordingly in your AWS S3.
 
@@ -46,14 +46,14 @@ Here is the config table for the module:
 
 |Property|Data Type|Default value|Description|
 |--|--|--|--|
-|pattern|object|**[see config below](https://github.com/contentstack/datasync-content-store-aws-s3#detailed-configs)**|**Optional.** The patterns to store contents is s3|
+|pattern|object|**[see config below](https://github.com/contentstack/datasync-content-store-s3#detailed-configs)**|**Optional.** The patterns to store contents is s3|
 |region|string|us-east-1|**Optional.** The aws region|
 |apiVersion|string|2006-03-01|**Optional.** The aws api version|
-|credentials| object |**[see config below](https://github.com/contentstack/datasync-content-store-aws-s3#detailed-configs)** |**Required.** Specify access key and secret key|
-|bucketParams| object |**[see config below](https://github.com/contentstack/datasync-content-store-aws-s3#detailed-configs)** |**Required.** Specify bucket name and ACL|
-|uploadParams|object|**[see config below](https://github.com/contentstack/datasync-content-store-aws-s3#detailed-configs)** |**Optional.** Specify upload params|
-|CORSConfiguration|object|**[see config below](https://github.com/contentstack/datasync-content-store-aws-s3#detailed-configs)** |**Optional.** CORS configs|
-|Policy|object|**[see config below](https://github.com/contentstack/datasync-content-store-aws-s3#detailed-configs)** |**Required.** Specify policy|
+|credentials| object |**[see config below](https://github.com/contentstack/datasync-content-store-s3#detailed-configs)** |**Required.** Specify access key and secret key|
+|bucketParams| object |**[see config below](https://github.com/contentstack/datasync-content-store-s3#detailed-configs)** |**Required.** Specify bucket name and ACL|
+|uploadParams|object|**[see config below](https://github.com/contentstack/datasync-content-store-s3#detailed-configs)** |**Optional.** Specify upload params|
+|CORSConfiguration|object|**[see config below](https://github.com/contentstack/datasync-content-store-s3#detailed-configs)** |**Optional.** CORS configs|
+|Policy|object|**[see config below](https://github.com/contentstack/datasync-content-store-s3#detailed-configs)** |**Required.** Specify policy|
 
 ### Detailed configs
 
