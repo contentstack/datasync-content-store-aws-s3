@@ -1,14 +1,14 @@
 {
   "name": "contentstack-content-store-aws-s3",
   "author": "Contentstack Ecosystem",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Backup data published from Contentstack onto AWS S3 buckets",
   "main": "dist",
   "dependencies": {
     "@contentstack/webhook-listener": "0.0.1",
     "aws-sdk": "^2.406.0",
-    "debug": "4.1.0",
-    "lodash": "4.17.11"
+    "debug": "^4.3.4",
+    "lodash": "^4.17.21"
   },
   "devDependencies": {
     "@types/aws-sdk": "^2.7.0",
@@ -19,14 +19,14 @@
     "@types/node": "10.12.12",
     "@types/request": "^2.48.1",
     "@types/rimraf": "^2.0.2",
-    "jest": "^23.6.0",
+    "jest": "^29.0.3",
     "mkdirp": "^0.5.1",
     "nock": "^10.0.6",
-    "npm": "^6.5.0",
+    "npm": "^8.19.2",
     "rimraf": "^2.6.2",
-    "ts-jest": "^23.10.5",
+    "ts-jest": "^29.0.2",
     "tslint": "5.11.0",
-    "typescript": "^3.2.2"
+    "typescript": "^4.2.0"
   },
   "scripts": {
     "clean": "rimraf dist typings coverage .tokens",
