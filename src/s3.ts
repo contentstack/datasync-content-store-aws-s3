@@ -184,7 +184,7 @@ export class S3 implements IContentStore {
         const contentType = {
           uid: clonedObject.content_type_uid,
           content_type_uid: this.keys.content_type_uid,
-          data: (clonedObject as IPublishedEntry).content_type
+          data: clonedObject.content_type
         }
 
         validatePublishedObject(entry.data, this.requiredKeys.entry)
