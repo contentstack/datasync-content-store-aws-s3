@@ -32,6 +32,7 @@
     "clean": "rimraf dist typings coverage .tokens",
     "build-ts": "npm run clean && tsc",
     "watch-ts": "npm run clean && tsc -w",
+    "prepack": "npm run built-ts",
     "start": "dist",
     "tslint": "npx tslint -c tslint.json 'src/**/*.ts' --fix",
     "test": "jest --colors --coverage --verbose"
