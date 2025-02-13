@@ -37,7 +37,7 @@
     "test": "jest --colors --coverage --verbose"
   },
   "engines": {
-    "node": ">=8"
+    "node": ">=22"
   },
   "keywords": [
     "contentstack",
