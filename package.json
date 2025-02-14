@@ -5,8 +5,8 @@
   "description": "Backup data published from Contentstack onto AWS S3 buckets",
   "main": "dist",
   "dependencies": {
-    "@contentstack/webhook-listener": "0.0.1",
-    "aws-sdk": "^2.406.0",
+    "@contentstack/webhook-listener": "1.0.5",
+    "aws-sdk": "^2.1354.0",
     "debug": "^4.3.4",
     "lodash": "^4.17.21"
   },
@@ -37,7 +37,7 @@
     "test": "jest --colors --coverage --verbose"
   },
   "engines": {
-    "node": ">=8"
+    "node": ">=22"
   },
   "keywords": [
     "contentstack",
