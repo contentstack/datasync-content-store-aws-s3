@@ -12,6 +12,7 @@ s3
 
 # Data
 _contents
+dist
 
 # Private examples
 example/filesystem.js
