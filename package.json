@@ -6,7 +6,7 @@
   "main": "dist",
   "dependencies": {
     "@contentstack/webhook-listener": "0.0.1",
-    "aws-sdk": "^2.406.0",
+    "aws-sdk": "^2.1354.0",
     "debug": "^4.3.4",
     "lodash": "^4.17.21"
   },
@@ -19,6 +19,7 @@
     "@types/node": "10.12.12",
     "@types/request": "^2.48.1",
     "@types/rimraf": "^2.0.2",
+    "husky": "^9.1.7",
     "jest": "^29.0.3",
     "mkdirp": "^0.5.1",
     "nock": "^10.0.6",
@@ -34,7 +35,8 @@
     "watch-ts": "npm run clean && tsc -w",
     "start": "dist",
     "tslint": "npx tslint -c tslint.json 'src/**/*.ts' --fix",
-    "test": "jest --colors --coverage --verbose"
+    "test": "jest --colors --coverage --verbose",
+    "pre-commit": "husky install && husky && chmod +x .husky/pre-commit"
   },
   "engines": {
     "node": ">=8"
