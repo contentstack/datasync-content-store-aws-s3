@@ -2,6 +2,15 @@ import Debug from 'debug'
 import { cloneDeep, map, uniqBy } from 'lodash'
 import { getPath, filterKeys } from './util/index'
 import { validatePublishedObject } from './util/validations'
+import {
+  assetMessages,
+  contentTypeMessages,
+  deleteMessages,
+  entryMessages,
+  fetchMessages,
+  s3Messages,
+  searchMessages,
+} from './messages'
 
 const debug = Debug('content-store-aws-s3')
 
@@ -172,7 +181,7 @@ export class S3 implements IContentStore {
   public publishEntry (publishedEntry: IPublishedEntry) {
     return new Promise(async (resolve, reject) => {
       try {
-        debug(`Publishing entry ${JSON.stringify(publishedEntry)}`)
+        debug(entryMessages.publishing(publishedEntry))
         const clonedObject = cloneDeep(publishedEntry)
         const entry = {
           locale: clonedObject.locale,
@@ -205,7 +214,7 @@ export class S3 implements IContentStore {
           .on('error', reject)
           .promise()
           .then((entryUploadResponse) => {
-            debug(`Entry s3 upload response: ${JSON.stringify(entryUploadResponse)}`)
+            debug(entryMessages.uploadResponse(entryUploadResponse))
             const params2 = cloneDeep(this.config.uploadParams)
             params2.Key = schemaPath
             params2.Body = JSON.stringify(contentType)
@@ -216,7 +225,7 @@ export class S3 implements IContentStore {
             .promise()
           })
           .then((ctUploadResponse) => {
-            debug(`Content type s3 upload response: ${JSON.stringify(ctUploadResponse)}`)
+            debug(contentTypeMessages.uploadResponse(ctUploadResponse))
 
             return resolve(publishedEntry)
           })
@@ -230,7 +239,7 @@ export class S3 implements IContentStore {
   public publishAsset (publishedAsset: IPublishedAsset) {
     return new Promise(async (resolve, reject) => {
       try {
-        debug(`Publishing asset ${JSON.stringify(publishedAsset)}`)
+        debug(assetMessages.publishing(publishedAsset))
         const asset = cloneDeep(publishedAsset)
         // if (asset.data._version) {
         //   await this.unpublish(asset)
@@ -250,7 +259,7 @@ export class S3 implements IContentStore {
           .on('error', reject)
           .promise()
           .then((s3Response) => {
-            debug(`Asset s3 upload response: ${JSON.stringify(s3Response)}`)
+            debug(assetMessages.uploadResponse(s3Response))
 
             return resolve(publishedAsset)
           })
@@ -275,7 +284,7 @@ export class S3 implements IContentStore {
       delete params.ACL
       params.Delimiter = uid
       // params.MaxKeys = 0
-      debug(`search s3 params: ${JSON.stringify(params)}`)
+      debug(searchMessages.params(params))
       // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#listObjects-property
       // params.RequestPayer = 'requester'
 
@@ -284,7 +293,7 @@ export class S3 implements IContentStore {
         .on('error', reject)
         .promise()
         .then((s3Response) => {
-          debug(`searchS3: list objects response: ${JSON.stringify(s3Response, null, 2)}`)
+          debug(searchMessages.listObjectsResponse(s3Response))
 
           return resolve(s3Response.CommonPrefixes)
         })
@@ -297,7 +306,7 @@ export class S3 implements IContentStore {
       const params = cloneDeep(this.config.uploadParams)
       delete params.ACL
       params.Prefix = Prefix
-      debug(`fetchContents params ${JSON.stringify(params)}`)
+      debug(fetchMessages.params(params))
       // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#listObjects-property
       // params.RequestPayer = 'requester'
 
@@ -306,7 +315,7 @@ export class S3 implements IContentStore {
         .on('error', reject)
         .promise()
         .then((s3Response) => {
-          debug(`fetchContents response: ${JSON.stringify(s3Response, null, 2)}`)
+          debug(fetchMessages.response(s3Response))
           // TODO: Consideration, what if there are more than 1000 keys? Pagination Required!
           s3Response.Contents.forEach((Content: IContents) => {
             Contents.push(Content)
@@ -322,7 +331,7 @@ export class S3 implements IContentStore {
       try {
         const Prefixes: { Prefix: string }[] = (await this.searchS3(uid) as { Prefix: string}[])
         const UniqPrefixes = uniqBy(Prefixes, 'Prefix')
-        debug(`Unique prefixes found ${JSON.stringify(UniqPrefixes)}`)
+        debug(fetchMessages.uniquePrefixes(UniqPrefixes))
         const Contents: IContents[] = []
         const promises: Promise<any>[] = []
 
@@ -335,7 +344,7 @@ export class S3 implements IContentStore {
             const UniqContents: IContents[] = uniqBy(Contents, 'Key')
             const promises2: Promise<any>[] = []
             const Items: IContents[] = []
-            debug(`Unique Contents found: ${JSON.stringify(UniqContents)}`)
+            debug(fetchMessages.uniqueContents(UniqContents))
 
             UniqContents.forEach((Content: IContents) => {
               promises2.push(this.fetchContents(Content.Key, Items))
@@ -346,12 +355,12 @@ export class S3 implements IContentStore {
                 for (let i = 0; i < Items.length; i++) {
                   // Items that have '/' at the end of their Key are folders
                   if (Items[i].Key.charAt(Items[i].Key.length - 1) === '/') {
-                    debug(`Removing folders.. ${JSON.stringify(Items[i])}`)
+                    debug(deleteMessages.removingFolders(Items[i]))
                     Items.splice(i, 1)
                     i--
                   }
                 }
-                debug(`Items found ${JSON.stringify(Items)}`)
+                debug(s3Messages.itemsFound(Items))
 
                 return Items
               })
@@ -384,7 +393,7 @@ export class S3 implements IContentStore {
       const params = cloneDeep(this.config.uploadParams)
       delete params.ACL
       params.Key = Item.Key
-      debug(`getObject called with params: ${JSON.stringify(params)}`)
+      debug(s3Messages.getObjectParams(params))
 
       // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#listObjects-property
       // params.RequestPayer = 'requester'
@@ -406,7 +415,7 @@ export class S3 implements IContentStore {
   private unpublishAsset (asset: IUnpublishedAsset) {
     return new Promise(async (resolve, reject) => {
       try {
-        debug(`Unpublishing asset ${JSON.stringify(asset)}`)
+        debug(assetMessages.unpublishing(asset))
         const assets: any = await this.fetch(asset.uid)
         let publishedAsset: any
 
@@ -435,7 +444,7 @@ export class S3 implements IContentStore {
           .on('error', reject)
           .promise()
           .then((s3Response) => {
-            debug(`deleteObject response: ${JSON.stringify(s3Response, null, 2)}`)
+            debug(deleteMessages.deleteObjectResponse(s3Response))
             
             // TODO: Consideration, what if there are more than 1000 keys? Pagination Required!
             return resolve(asset)
@@ -476,7 +485,7 @@ export class S3 implements IContentStore {
           .on('error', reject)
           .promise()
           .then((s3Response) => {
-            debug(`deleteObject response: ${JSON.stringify(s3Response, null, 2)}`)
+            debug(deleteMessages.deleteObjectResponse(s3Response))
             
             // TODO: Consideration, what if there are more than 1000 keys? Pagination Required!
             return resolve(entry)
@@ -491,7 +500,7 @@ export class S3 implements IContentStore {
   public delete (input: any) {
     return new Promise(async (resolve, reject) => {
       try {
-        debug(`Deleting: ${JSON.stringify(input)}`)
+        debug(deleteMessages.deleting(input))
         const matches: any = await this.fetch(input.uid)
         const Keys: any = await this.fetch(input.uid, true)
         // what if there are more than 1 matches? TODO: Investigate
@@ -524,7 +533,7 @@ export class S3 implements IContentStore {
           .on('error', reject)
           .promise()
           .then((s3Response) => {
-            debug(`deleteObject response: ${JSON.stringify(s3Response, null, 2)}`)
+            debug(deleteMessages.deleteObjectResponse(s3Response))
             
             // TODO: Consideration, what if there are more than 1000 keys? Pagination Required!
             return resolve(input)
