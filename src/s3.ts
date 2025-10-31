@@ -320,7 +320,7 @@ export class S3 implements IContentStore {
           s3Response.Contents.forEach((Content: IContents) => {
             Contents.push(Content)
           })
-          return resolve()
+          return resolve(undefined)
         })
         .catch(reject)
     })
@@ -406,7 +406,7 @@ export class S3 implements IContentStore {
           const data = JSON.parse(s3Response.Body)
           // TODO: Consideration, what if there are more than 1000 keys? Pagination Required!
           ItemsData.push(data)
-          return resolve()
+          return resolve(undefined)
         })
         .catch(reject)
     })

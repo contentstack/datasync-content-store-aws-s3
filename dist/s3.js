@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -11,11 +12,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.S3 = void 0;
 const debug_1 = __importDefault(require("debug"));
 const lodash_1 = require("lodash");
 const index_1 = require("./util/index");
 const validations_1 = require("./util/validations");
-const debug = debug_1.default('content-store-aws-s3');
+const messages_1 = require("./messages");
+const debug = (0, debug_1.default)('content-store-aws-s3');
 class S3 {
     constructor(assetStore, s3, config) {
         this.assetStore = assetStore;
@@ -39,8 +42,8 @@ class S3 {
     publishEntry(publishedEntry) {
         return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
             try {
-                debug(`Publishing entry ${JSON.stringify(publishedEntry)}`);
-                const clonedObject = lodash_1.cloneDeep(publishedEntry);
+                debug(messages_1.entryMessages.publishing(publishedEntry));
+                const clonedObject = (0, lodash_1.cloneDeep)(publishedEntry);
                 const entry = {
                     locale: clonedObject.locale,
                     uid: clonedObject.uid,
@@ -52,21 +55,21 @@ class S3 {
                     content_type_uid: this.keys.content_type_uid,
                     data: clonedObject.content_type
                 };
-                validations_1.validatePublishedObject(entry.data, this.requiredKeys.entry);
-                validations_1.validatePublishedObject(contentType.data, this.requiredKeys.contentType);
-                index_1.filterKeys(entry.data, this.unwantedKeys.entry);
-                index_1.filterKeys(contentType.data, this.unwantedKeys.entry);
-                const entryPath = index_1.getPath(this.patterns.entry, entry, this.config.versioning);
-                const schemaPath = index_1.getPath(this.patterns.contentType, contentType, this.config.versioning);
-                const params = lodash_1.cloneDeep(this.config.uploadParams);
+                (0, validations_1.validatePublishedObject)(entry.data, this.requiredKeys.entry);
+                (0, validations_1.validatePublishedObject)(contentType.data, this.requiredKeys.contentType);
+                (0, index_1.filterKeys)(entry.data, this.unwantedKeys.entry);
+                (0, index_1.filterKeys)(contentType.data, this.unwantedKeys.entry);
+                const entryPath = (0, index_1.getPath)(this.patterns.entry, entry, this.config.versioning);
+                const schemaPath = (0, index_1.getPath)(this.patterns.contentType, contentType, this.config.versioning);
+                const params = (0, lodash_1.cloneDeep)(this.config.uploadParams);
                 params.Key = entryPath;
                 params.Body = JSON.stringify(entry);
                 return this.s3.putObject(params)
                     .on('error', reject)
                     .promise()
                     .then((entryUploadResponse) => {
-                    debug(`Entry s3 upload response: ${JSON.stringify(entryUploadResponse)}`);
-                    const params2 = lodash_1.cloneDeep(this.config.uploadParams);
+                    debug(messages_1.entryMessages.uploadResponse(entryUploadResponse));
+                    const params2 = (0, lodash_1.cloneDeep)(this.config.uploadParams);
                     params2.Key = schemaPath;
                     params2.Body = JSON.stringify(contentType);
                     return this.s3.putObject(params2)
@@ -74,7 +77,7 @@ class S3 {
                         .promise();
                 })
                     .then((ctUploadResponse) => {
-                    debug(`Content type s3 upload response: ${JSON.stringify(ctUploadResponse)}`);
+                    debug(messages_1.contentTypeMessages.uploadResponse(ctUploadResponse));
                     return resolve(publishedEntry);
                 })
                     .catch(reject);
@@ -87,13 +90,13 @@ class S3 {
     publishAsset(publishedAsset) {
         return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
             try {
-                debug(`Publishing asset ${JSON.stringify(publishedAsset)}`);
-                const asset = lodash_1.cloneDeep(publishedAsset);
-                validations_1.validatePublishedObject(asset.data, this.requiredKeys.asset);
-                index_1.filterKeys(asset.data, this.unwantedKeys.asset);
+                debug(messages_1.assetMessages.publishing(publishedAsset));
+                const asset = (0, lodash_1.cloneDeep)(publishedAsset);
+                (0, validations_1.validatePublishedObject)(asset.data, this.requiredKeys.asset);
+                (0, index_1.filterKeys)(asset.data, this.unwantedKeys.asset);
                 yield this.assetStore.download(asset.data);
-                const assetPath = index_1.getPath(this.patterns.asset, asset, this.config.versioning);
-                const params = lodash_1.cloneDeep(this.config.uploadParams);
+                const assetPath = (0, index_1.getPath)(this.patterns.asset, asset, this.config.versioning);
+                const params = (0, lodash_1.cloneDeep)(this.config.uploadParams);
                 params.Key = assetPath;
                 params.Body = JSON.stringify(asset);
                 return this.s3.upload(params)
@@ -101,7 +104,7 @@ class S3 {
                     .on('error', reject)
                     .promise()
                     .then((s3Response) => {
-                    debug(`Asset s3 upload response: ${JSON.stringify(s3Response)}`);
+                    debug(messages_1.assetMessages.uploadResponse(s3Response));
                     return resolve(publishedAsset);
                 })
                     .catch(reject);
@@ -119,16 +122,16 @@ class S3 {
     }
     searchS3(uid) {
         return new Promise((resolve, reject) => {
-            const params = lodash_1.cloneDeep(this.config.uploadParams);
+            const params = (0, lodash_1.cloneDeep)(this.config.uploadParams);
             delete params.ACL;
             params.Delimiter = uid;
-            debug(`search s3 params: ${JSON.stringify(params)}`);
+            debug(messages_1.searchMessages.params(params));
             return this.s3.listObjects(params)
                 .on('httpUploadProgress', debug)
                 .on('error', reject)
                 .promise()
                 .then((s3Response) => {
-                debug(`searchS3: list objects response: ${JSON.stringify(s3Response, null, 2)}`);
+                debug(messages_1.searchMessages.listObjectsResponse(s3Response));
                 return resolve(s3Response.CommonPrefixes);
             })
                 .catch(reject);
@@ -136,20 +139,20 @@ class S3 {
     }
     fetchContents(Prefix, Contents) {
         return new Promise((resolve, reject) => {
-            const params = lodash_1.cloneDeep(this.config.uploadParams);
+            const params = (0, lodash_1.cloneDeep)(this.config.uploadParams);
             delete params.ACL;
             params.Prefix = Prefix;
-            debug(`fetchContents params ${JSON.stringify(params)}`);
+            debug(messages_1.fetchMessages.params(params));
             return this.s3.listObjects(params)
                 .on('httpUploadProgress', debug)
                 .on('error', reject)
                 .promise()
                 .then((s3Response) => {
-                debug(`fetchContents response: ${JSON.stringify(s3Response, null, 2)}`);
+                debug(messages_1.fetchMessages.response(s3Response));
                 s3Response.Contents.forEach((Content) => {
                     Contents.push(Content);
                 });
-                return resolve();
+                return resolve(undefined);
             })
                 .catch(reject);
         });
@@ -158,8 +161,8 @@ class S3 {
         return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
             try {
                 const Prefixes = yield this.searchS3(uid);
-                const UniqPrefixes = lodash_1.uniqBy(Prefixes, 'Prefix');
-                debug(`Unique prefixes found ${JSON.stringify(UniqPrefixes)}`);
+                const UniqPrefixes = (0, lodash_1.uniqBy)(Prefixes, 'Prefix');
+                debug(messages_1.fetchMessages.uniquePrefixes(UniqPrefixes));
                 const Contents = [];
                 const promises = [];
                 UniqPrefixes.forEach((CommonPrefix) => {
@@ -167,10 +170,10 @@ class S3 {
                 });
                 return Promise.all(promises)
                     .then(() => {
-                    const UniqContents = lodash_1.uniqBy(Contents, 'Key');
+                    const UniqContents = (0, lodash_1.uniqBy)(Contents, 'Key');
                     const promises2 = [];
                     const Items = [];
-                    debug(`Unique Contents found: ${JSON.stringify(UniqContents)}`);
+                    debug(messages_1.fetchMessages.uniqueContents(UniqContents));
                     UniqContents.forEach((Content) => {
                         promises2.push(this.fetchContents(Content.Key, Items));
                     });
@@ -178,12 +181,12 @@ class S3 {
                         .then(() => {
                         for (let i = 0; i < Items.length; i++) {
                             if (Items[i].Key.charAt(Items[i].Key.length - 1) === '/') {
-                                debug(`Removing folders.. ${JSON.stringify(Items[i])}`);
+                                debug(messages_1.deleteMessages.removingFolders(Items[i]));
                                 Items.splice(i, 1);
                                 i--;
                             }
                         }
-                        debug(`Items found ${JSON.stringify(Items)}`);
+                        debug(messages_1.s3Messages.itemsFound(Items));
                         return Items;
                     });
                 })
@@ -211,10 +214,10 @@ class S3 {
     }
     getObject(Item, ItemsData) {
         return new Promise((resolve, reject) => {
-            const params = lodash_1.cloneDeep(this.config.uploadParams);
+            const params = (0, lodash_1.cloneDeep)(this.config.uploadParams);
             delete params.ACL;
             params.Key = Item.Key;
-            debug(`getObject called with params: ${JSON.stringify(params)}`);
+            debug(messages_1.s3Messages.getObjectParams(params));
             return this.s3.getObject(params)
                 .on('httpUploadProgress', debug)
                 .on('error', reject)
@@ -222,7 +225,7 @@ class S3 {
                 .then((s3Response) => {
                 const data = JSON.parse(s3Response.Body);
                 ItemsData.push(data);
-                return resolve();
+                return resolve(undefined);
             })
                 .catch(reject);
         });
@@ -230,7 +233,7 @@ class S3 {
     unpublishAsset(asset) {
         return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
             try {
-                debug(`Unpublishing asset ${JSON.stringify(asset)}`);
+                debug(messages_1.assetMessages.unpublishing(asset));
                 const assets = yield this.fetch(asset.uid);
                 let publishedAsset;
                 for (let i = 0; i < assets.length; i++) {
@@ -243,15 +246,15 @@ class S3 {
                     return resolve(asset);
                 }
                 yield this.assetStore.unpublish(publishedAsset.data);
-                const params = lodash_1.cloneDeep(this.config.uploadParams);
+                const params = (0, lodash_1.cloneDeep)(this.config.uploadParams);
                 delete params.ACL;
-                params.Key = index_1.getPath(this.patterns.asset, publishedAsset, this.config.versioning);
+                params.Key = (0, index_1.getPath)(this.patterns.asset, publishedAsset, this.config.versioning);
                 return this.s3.deleteObject(params)
                     .on('httpUploadProgress', debug)
                     .on('error', reject)
                     .promise()
                     .then((s3Response) => {
-                    debug(`deleteObject response: ${JSON.stringify(s3Response, null, 2)}`);
+                    debug(messages_1.deleteMessages.deleteObjectResponse(s3Response));
                     return resolve(asset);
                 })
                     .catch(reject);
@@ -275,15 +278,15 @@ class S3 {
                 if (typeof publishedEntry === 'undefined') {
                     return resolve(entry);
                 }
-                const params = lodash_1.cloneDeep(this.config.uploadParams);
+                const params = (0, lodash_1.cloneDeep)(this.config.uploadParams);
                 delete params.ACL;
-                params.Key = index_1.getPath(this.patterns.entry, publishedEntry, this.config.versioning);
+                params.Key = (0, index_1.getPath)(this.patterns.entry, publishedEntry, this.config.versioning);
                 return this.s3.deleteObject(params)
                     .on('httpUploadProgress', debug)
                     .on('error', reject)
                     .promise()
                     .then((s3Response) => {
-                    debug(`deleteObject response: ${JSON.stringify(s3Response, null, 2)}`);
+                    debug(messages_1.deleteMessages.deleteObjectResponse(s3Response));
                     return resolve(entry);
                 })
                     .catch(reject);
@@ -296,17 +299,17 @@ class S3 {
     delete(input) {
         return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
             try {
-                debug(`Deleting: ${JSON.stringify(input)}`);
+                debug(messages_1.deleteMessages.deleting(input));
                 const matches = yield this.fetch(input.uid);
                 const Keys = yield this.fetch(input.uid, true);
                 if (matches.length === 0) {
                     return resolve(input);
                 }
-                const datas = lodash_1.map(matches, 'data');
+                const datas = (0, lodash_1.map)(matches, 'data');
                 if (input.content_type_uid === this.keys.assets) {
                     yield this.assetStore.delete(datas);
                 }
-                const params = lodash_1.cloneDeep(this.config.uploadParams);
+                const params = (0, lodash_1.cloneDeep)(this.config.uploadParams);
                 delete params.ACL;
                 params.Delete = {
                     Objects: [],
@@ -322,7 +325,7 @@ class S3 {
                     .on('error', reject)
                     .promise()
                     .then((s3Response) => {
-                    debug(`deleteObject response: ${JSON.stringify(s3Response, null, 2)}`);
+                    debug(messages_1.deleteMessages.deleteObjectResponse(s3Response));
                     return resolve(input);
                 })
                     .catch(reject);
