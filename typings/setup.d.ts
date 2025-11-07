@@ -1,1 +1,1 @@
-export declare const init: (config: any) => Promise<{}>;
+export declare const init: (config: any) => Promise<unknown>;
