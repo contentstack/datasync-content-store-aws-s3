@@ -67,16 +67,16 @@ export declare class S3 implements IContentStore {
     private unwantedKeys;
     private requiredKeys;
     constructor(assetStore: any, s3: any, config: any);
-    publish(publishedObject: any): Promise<{}>;
-    publishEntry(publishedEntry: IPublishedEntry): Promise<{}>;
-    publishAsset(publishedAsset: IPublishedAsset): Promise<{}>;
-    unpublish(unpublishedObject: IUnpublishedAsset | IUnpublishedEntry): Promise<{}>;
+    publish(publishedObject: any): Promise<unknown>;
+    publishEntry(publishedEntry: IPublishedEntry): Promise<unknown>;
+    publishAsset(publishedAsset: IPublishedAsset): Promise<unknown>;
+    unpublish(unpublishedObject: IUnpublishedAsset | IUnpublishedEntry): Promise<unknown>;
     private searchS3;
     private fetchContents;
     private fetch;
     private getObject;
     private unpublishAsset;
     private unpublishEntry;
-    delete(input: any): Promise<{}>;
+    delete(input: any): Promise<unknown>;
 }
 export {};

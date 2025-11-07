@@ -1,9 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.validateDeletedObject = exports.validateUnpublishedObject = exports.validatePublishedObject = exports.validateLogger = exports.validateConfig = void 0;
 const lodash_1 = require("lodash");
 const config_1 = require("../config");
 const requiredKeys = config_1.config.contentStore.internal.requiredKeys;
-exports.validateConfig = (config) => {
+const validateConfig = (config) => {
     if (typeof config.bucketParams !== 'object' || !(config.bucketParams.Bucket || config.bucketParams.name)) {
         throw new Error('Kindly provide valid bucket config!');
     }
@@ -17,7 +18,8 @@ exports.validateConfig = (config) => {
     }
     return config;
 };
-exports.validateLogger = (logger) => {
+exports.validateConfig = validateConfig;
+const validateLogger = (logger) => {
     let flag = false;
     if (!logger) {
         return flag;
@@ -30,31 +32,35 @@ exports.validateLogger = (logger) => {
     });
     return !flag;
 };
+exports.validateLogger = validateLogger;
 const validateObject = (action, asset) => {
     if (typeof asset !== 'object' || asset === null || asset instanceof Array) {
         throw new Error(`Asset ${asset} should be of type 'plain object'`);
     }
     const keys = requiredKeys[action];
     keys.forEach((key) => {
-        if (!(lodash_1.hasIn(asset, key))) {
+        if (!((0, lodash_1.hasIn)(asset, key))) {
             throw new Error(`Required key '${key}' not found in ${JSON.stringify(asset)}`);
         }
     });
 };
-exports.validatePublishedObject = (obj, requiredKeys) => {
+const validatePublishedObject = (obj, requiredKeys) => {
     if (requiredKeys && typeof requiredKeys === 'object') {
         for (const key in requiredKeys) {
             if (requiredKeys[key]) {
-                if (!lodash_1.hasIn(obj, key)) {
+                if (!(0, lodash_1.hasIn)(obj, key)) {
                     throw new Error(`Required key '${key}' was not found in ${JSON.stringify(obj)}`);
                 }
             }
         }
     }
 };
-exports.validateUnpublishedObject = (obj) => {
+exports.validatePublishedObject = validatePublishedObject;
+const validateUnpublishedObject = (obj) => {
     validateObject('unpublish', obj);
 };
-exports.validateDeletedObject = (obj) => {
+exports.validateUnpublishedObject = validateUnpublishedObject;
+const validateDeletedObject = (obj) => {
     validateObject('delete', obj);
 };
+exports.validateDeletedObject = validateDeletedObject;

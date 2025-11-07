@@ -1,7 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.filterKeys = exports.buildAWSConfig = exports.formatConfig = exports.getPath = void 0;
 const path_1 = require("path");
-exports.getPath = (keys, input, versioning) => {
+const messages_1 = require("../messages");
+const getPath = (keys, input, versioning) => {
     const path = [];
     keys.forEach((key) => {
         if (key.charAt(0) === ':') {
@@ -18,7 +20,7 @@ exports.getPath = (keys, input, versioning) => {
                 path.push(input[key]);
             }
             else {
-                throw new TypeError(`${key} did not exist in ${JSON.stringify(input)}!`);
+                throw new TypeError(messages_1.errorMessages.keyNotExist(key, input));
             }
         }
         else {
@@ -27,7 +29,8 @@ exports.getPath = (keys, input, versioning) => {
     });
     return path_1.join.apply(this, path);
 };
-exports.formatConfig = (config) => {
+exports.getPath = getPath;
+const formatConfig = (config) => {
     const bucket = config.bucketParams;
     if (bucket.name) {
         bucket.Bucket = bucket.name;
@@ -42,7 +45,8 @@ exports.formatConfig = (config) => {
     config.apiVersion = config.apiVersion || 'latest';
     return config;
 };
-exports.buildAWSConfig = (config) => {
+exports.formatConfig = formatConfig;
+const buildAWSConfig = (config) => {
     const awsConfig = {
         apiVersion: config.apiVersion,
         region: config.region
@@ -55,7 +59,8 @@ exports.buildAWSConfig = (config) => {
     }
     return awsConfig;
 };
-exports.filterKeys = (input, keys = {}) => {
+exports.buildAWSConfig = buildAWSConfig;
+const filterKeys = (input, keys = {}) => {
     for (const key in keys) {
         if (keys[key]) {
             delete input[key];
@@ -63,3 +68,4 @@ exports.filterKeys = (input, keys = {}) => {
     }
     return input;
 };
+exports.filterKeys = filterKeys;
