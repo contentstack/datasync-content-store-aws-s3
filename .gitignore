@@ -17,3 +17,6 @@ _contents
 example/filesystem.js
 example/s3.js
 example/mongodb.js
+
+talisman_output.log
+snyk_output.log
