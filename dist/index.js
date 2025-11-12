@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.start = exports.getConfig = exports.setAssetStore = exports.setConfig = void 0;
 const lodash_1 = require("lodash");
 const config_1 = require("./config");
 const s3_1 = require("./s3");
@@ -7,22 +8,25 @@ const setup_1 = require("./setup");
 const validations_1 = require("./util/validations");
 let appConfig = {};
 let assetStore;
-exports.setConfig = (config) => {
+const setConfig = (config) => {
     appConfig = config;
 };
-exports.setAssetStore = (instance) => {
+exports.setConfig = setConfig;
+const setAssetStore = (instance) => {
     assetStore = instance;
 };
-exports.getConfig = () => {
+exports.setAssetStore = setAssetStore;
+const getConfig = () => {
     return appConfig;
 };
-exports.start = (assetStoreInstance, config) => {
+exports.getConfig = getConfig;
+const start = (assetStoreInstance, config) => {
     return new Promise((resolve, reject) => {
         try {
-            appConfig = lodash_1.merge(config_1.config, appConfig, config || {});
-            validations_1.validateConfig(appConfig.contentStore);
+            appConfig = (0, lodash_1.merge)(config_1.config, appConfig, config || {});
+            (0, validations_1.validateConfig)(appConfig.contentStore);
             assetStore = assetStoreInstance || assetStore;
-            return setup_1.init(appConfig.contentStore)
+            return (0, setup_1.init)(appConfig.contentStore)
                 .then((awsInstance) => {
                 const s3 = new s3_1.S3(assetStore, awsInstance, appConfig);
                 return resolve(s3);
@@ -34,3 +38,4 @@ exports.start = (assetStoreInstance, config) => {
         }
     });
 };
+exports.start = start;

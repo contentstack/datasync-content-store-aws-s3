@@ -15,5 +15,5 @@ interface IAssetStore {
 export declare const setConfig: (config: IConfig) => void;
 export declare const setAssetStore: (instance: IAssetStore) => void;
 export declare const getConfig: () => IConfig;
-export declare const start: (assetStoreInstance?: IAssetStore, config?: IConfig) => Promise<{}>;
+export declare const start: (assetStoreInstance?: IAssetStore, config?: IConfig) => Promise<unknown>;
 export {};
