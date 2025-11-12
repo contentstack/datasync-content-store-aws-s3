@@ -2,14 +2,15 @@ import AWS from 'aws-sdk'
 import Debug from 'debug'
 
 import { buildAWSConfig, formatConfig } from './util'
+import { setupMessages } from './messages'
 
 const debug = Debug('cs-s3-setup')
 let S3
 
 const factory = (method, config) => {
-  debug(`Factory: ${JSON.stringify(config)}`)
+  debug(setupMessages.factoryConfig(config))
   return S3[method](config).promise().then((result) => {
-    debug(`Result: ${JSON.stringify(result)}`)
+    debug(setupMessages.factoryResult(result))
     return
   })
 }

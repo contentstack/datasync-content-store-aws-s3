@@ -1,4 +1,5 @@
 import { join } from 'path'
+import { errorMessages } from '../messages'
 
 export const getPath = (keys, input, versioning) => {
   const path = []
@@ -16,7 +17,7 @@ export const getPath = (keys, input, versioning) => {
       } else if (key in input) {
         path.push(input[key])
       } else {
-        throw new TypeError(`${key} did not exist in ${JSON.stringify(input)}!`)
+        throw new TypeError(errorMessages.keyNotExist(key, input))
       }
     } else {
       path.push(key)
