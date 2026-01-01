@@ -6,7 +6,7 @@
   "main": "dist",
   "dependencies": {
     "@contentstack/webhook-listener": "1.0.5",
-    "aws-sdk": "^2.1354.0",
+    "aws-sdk": "^2.1693.0",
     "debug": "^4.3.4",
     "lodash": "^4.17.21"
   },
