@@ -1,11 +1,11 @@
 {
   "name": "contentstack-content-store-aws-s3",
   "author": "Contentstack Ecosystem",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Backup data published from Contentstack onto AWS S3 buckets",
   "main": "dist",
   "dependencies": {
-    "@contentstack/webhook-listener": "1.0.5",
+    "@contentstack/webhook-listener": "1.1.0",
     "aws-sdk": "^2.1354.0",
     "debug": "^4.3.4",
     "lodash": "^4.17.21"
