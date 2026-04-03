@@ -8,7 +8,7 @@
     "@contentstack/webhook-listener": "1.1.0",
     "aws-sdk": "^2.1693.0",
     "debug": "^4.4.3",
-    "lodash": "^4.17.23"
+    "lodash": "^4.18.1"
   },
   "devDependencies": {
     "@types/aws-sdk": "^2.7.0",
