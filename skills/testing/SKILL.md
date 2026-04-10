@@ -32,8 +32,3 @@ description: Use when writing Jest tests, configuring mocks, or interpreting cov
 
 - Do **not** put real AWS keys or bucket names in tests or fixtures committed to the repo
 - Prefer mocks/stubs for S3 and external calls; use **nock** for HTTP where applicable (`devDependencies` includes `nock`)
-
-## References
-
-- [skills/dev-workflow/SKILL.md](../dev-workflow/SKILL.md)
-- [skills/framework/SKILL.md](../framework/SKILL.md)
