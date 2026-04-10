@@ -31,8 +31,3 @@ description: Use when working with AWS S3, aws-sdk usage, environment assumption
 
 - **Main:** `dist` (compiled JS); ensure `npm run build-ts` is run before publish
 - **Types:** `./typings` per `package.json`
-
-## References
-
-- [skills/content-store-aws-s3-sdk/SKILL.md](../content-store-aws-s3-sdk/SKILL.md)
-- [README.md](../../README.md) — configuration tables

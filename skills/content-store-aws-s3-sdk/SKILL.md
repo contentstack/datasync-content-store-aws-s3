@@ -38,9 +38,3 @@ Type **`IConfig`** in `src/index.ts` documents the `assetStore` block; the runti
 ### Errors and validation
 
 - Config validation is centralized in **`src/util/validations.ts`**; extend there when adding required fields or stricter checks
-
-## References
-
-- [README.md](../../README.md) — usage snippet and config tables
-- [skills/framework/SKILL.md](../framework/SKILL.md) — AWS and runtime assumptions
-- [skills/typescript/SKILL.md](../typescript/SKILL.md)
