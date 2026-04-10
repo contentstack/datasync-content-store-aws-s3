@@ -41,10 +41,4 @@ description: Use when setting up the repo locally, running build/test/lint, Husk
 ### PR expectations
 
 - Keep changes scoped; match existing TypeScript and TSLint style
-- Do not commit secrets or real AWS credentials (see [skills/testing/SKILL.md](../testing/SKILL.md))
-
-## References
-
-- [AGENTS.md](../../AGENTS.md)
-- [skills/typescript/SKILL.md](../typescript/SKILL.md)
-- [skills/testing/SKILL.md](../testing/SKILL.md)
+- Do not commit secrets or real AWS credentials (see the testing skill for policy)
