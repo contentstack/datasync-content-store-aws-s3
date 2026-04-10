@@ -29,8 +29,3 @@ description: Use when preparing or reviewing pull requests for this repositoryâ€
 | **Blocker** | Broken build, failing tests, secret leak, breaking API without version strategy |
 | **Major** | Missing tests for non-trivial logic, unclear validation, regression risk |
 | **Minor** | Naming nits, small doc gaps, optional refactors |
-
-## References
-
-- [AGENTS.md](../../AGENTS.md)
-- [skills/content-store-aws-s3-sdk/SKILL.md](../content-store-aws-s3-sdk/SKILL.md)

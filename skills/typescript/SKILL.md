@@ -31,8 +31,3 @@ description: Use when editing TypeScript source, tsconfig, typings output, or ma
 ### Types for dependencies
 
 - `@types/node`, `@types/aws-sdk`, `@types/lodash`, etc. are listed in `devDependencies`; keep versions compatible with the **TypeScript 4.x** toolchain in use
-
-## References
-
-- [skills/dev-workflow/SKILL.md](../dev-workflow/SKILL.md)
-- [skills/testing/SKILL.md](../testing/SKILL.md)
